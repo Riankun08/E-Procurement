@@ -1,0 +1,31 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rian123123
+      MYSQL_DATABASE: e_procurement
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./docker/mysql/data/:/var/lib/mysql
+    healthcheck: # Digunakan untuk check mysql berjalan lancar sebelum menjalankan service container api
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s # Docker akan menjalankan health check setiap 10 detik.
+      timeout: 5s # Docker memberikan waktu maksimal 5 detik bagi perintah health check untuk dijalankan.
+      retries: 3 # Docker akan menganggap service tidak sehat jika health check gagal sebanyak 3 kali berturut-turut.
+
+  api:
+    build: 
+      context: .
+      dockerfile: docker/api/Dockerfile
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      DATABASE_URL: mysql://root:rian123123@db:3306/e_procurement
+    depends_on:
+      db:
+        condition: service_healthy

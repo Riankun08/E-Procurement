@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id        String  @id @default(uuid())
+  name  String?
+  email  String?
+  password  String?
+  type  typeName
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+
+  vendors vendors[]
+}
+
+enum typeName {
+  admin
+  buyer
+  vendor
+}
+
+model vendors {
+  id   String  @id @default(uuid())
+  userId  String?
+  name  String
+  phone  String
+  citiesId  Int?
+  provinceId  Int?
+  address  String @db.Text
+  npwp  String? 
+  npwp_name  String? 
+  npwp_address  String? @db.Text
+  approved  Boolean @default(false)
+  balance  BigInt @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // relationship
+  user users? @relation(fields: [userId], references: [id])
+  city cities? @relation(fields: [citiesId], references: [id])
+  province provincies? @relation(fields: [provinceId], references: [id])
+}
+
+model cities {
+  id   Int  @id @default(autoincrement())
+  code  String
+  name  String
+  provinceId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // relationship
+  province provincies @relation(fields: [provinceId], references: [id])
+  vendors vendors[]
+}
+
+model provincies {
+  id   Int  @id @default(autoincrement())
+  code  String
+  name  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // relationship
+  cities cities []
+  vendors vendors[]
+}
+
+model role {
+  id   String  @id @default(uuid())
+  name  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // relationship
+  permission role_permissions []
+}
+
+model permission {
+  id   String  @id @default(uuid())
+  name  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // relationship
+  role role_permissions []
+
+}
+
+model role_permissions {
+  id   String  @id @default(uuid())
+  permissionId  String
+  roleId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  // relationship
+  role role @relation(fields: [roleId], references: [id])
+  permission permission @relation(fields: [permissionId], references: [id])
+}
